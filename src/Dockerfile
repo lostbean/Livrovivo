@@ -1,4 +1,4 @@
-FROM livebook/livebook:latest
+FROM ghcr.io/livebook-dev/livebook:latest
 
 RUN set -e; \
     apt-get update -y && apt-get install -y \
