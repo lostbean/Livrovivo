@@ -2,9 +2,9 @@ name: Build and Push to Image
 
 on:
   push:
-    branches: ["main"]
+    branches: ["master"]
   pull_request:
-    branches: ["main"]
+    branches: ["master"]
 
 env:
   PROJECT_ID: livrovivo
