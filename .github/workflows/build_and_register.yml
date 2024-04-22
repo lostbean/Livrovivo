@@ -34,7 +34,8 @@ jobs:
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       - name: Build image
-        run: cd src && docker build . --file Dockfile --tag ${{ env.GAR_LOCATION }}:$GITHUB_SHA
-
+        run: docker build . --file Dockfile --tag ${{ env.GAR_LOCATION }}:$GITHUB_SHA
+        working-directory: src
+ 
       - name: Push image
         run: docker push ${{ env.GAR_LOCATION }}:$GITHUB_SHA
