@@ -8,7 +8,7 @@ on:
 
 env:
   PROJECT_ID: livrovivo
-  GAR_LOCATION: us.gcr.io/livrovivo/livrovivo
+  REPOSITORY_LOCATION: us-central1-docker.pkg.dev/livrovivo/container-images
 
 jobs:
   build-push-artifact:
@@ -30,11 +30,11 @@ jobs:
 
       - name: "Docker auth"
         run: |-
-          gcloud auth configure-docker us.gcr.io --quiet
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
       - name: Build image
-        run: docker build . --file Dockerfile --tag ${{ env.GAR_LOCATION }}:$GITHUB_SHA
+        run: docker build . --file Dockerfile --tag ${{ env.REPOSITORY_LOCATION }}/livebook-with-storage:$GITHUB_SHA
         working-directory: src
  
       - name: Push image
-        run: docker push ${{ env.GAR_LOCATION }}:$GITHUB_SHA
+        run: docker push ${{ env.REPOSITORY_LOCATION }}/livebook-with-storage:$GITHUB_SHA
