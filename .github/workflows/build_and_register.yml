@@ -8,8 +8,7 @@ on:
 
 env:
   PROJECT_ID: livrovivo
-  REGION: us-central1
-  GAR_LOCATION: us-central1-docker.pkg.dev/livrovivo/cloud-run-source-deploy/livrovivo
+  GAR_LOCATION: us.gcr.io/livrovivo/livrovivo
 
 jobs:
   build-push-artifact:
@@ -31,7 +30,7 @@ jobs:
 
       - name: "Docker auth"
         run: |-
-          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+          gcloud auth configure-docker us.gcr.io --quiet
 
       - name: Build image
         run: docker build . --file Dockerfile --tag ${{ env.GAR_LOCATION }}:$GITHUB_SHA
