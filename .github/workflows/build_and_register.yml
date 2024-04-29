@@ -51,7 +51,7 @@ jobs:
         
       - name: Deploy
         run: >-
-          cloud beta run deploy ${{ env.BACKEND }}
+          gcloud beta run deploy ${{ env.BACKEND }}
           --image="${{ env.REGION }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA"
           --execution-environment gen2
           --allow-unauthenticated --port=8080
