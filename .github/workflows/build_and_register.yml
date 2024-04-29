@@ -1,39 +1,70 @@
-name: Build and Push to Artifact Registry
+name: Build and Push to Image
 
 on:
   push:
-    branches: ["main"]
+    branches: ["master"]
   pull_request:
-    branches: ["main"]
+    branches: ["master"]
 
 env:
   PROJECT_ID: livrovivo
-  TAG: livrovivo
+  BACKEND: livrovivo
+  BUCKET: livrovivo
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev
+  REPOSITORY_PATH: livrovivo/container-images
+  IMAGE_NAME: livebook-with-storage
 
 jobs:
-  build-push-artifact:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # This is required for requesting the JWT
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v3"
-
-      - id: "auth"
-        uses: "google-github-actions/auth@v1"
+          
+      - uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
-
+          create_credentials_file: 'true'
+          service_account: 'gh-actions-account@livrovivo.iam.gserviceaccount.com' 
+          workload_identity_provider: 'projects/901339380733/locations/global/workloadIdentityPools/github/providers/my-repo'
+          
       - name: "Set up Cloud SDK"
-        uses: "google-github-actions/setup-gcloud@v1"
+        uses: "google-github-actions/setup-gcloud@v2"
+        with:
+          install_components: 'beta'
 
       - name: "Use gcloud CLI"
-        run: "gcloud info"
+        run: |-
+          gcloud config set project ${{ env.PROJECT_ID }} 
+          gcloud info
 
       - name: "Docker auth"
         run: |-
-          gcloud auth configure-docker us.gcr.io --quiet
+          gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
 
       - name: Build image
-        run: cd src && docker build . --file Dockfile --tag ${{ env.TAG }}:$GITHUB_SHA
+        run: docker build . --file Dockerfile --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
+        working-directory: src
 
       - name: Push image
-        run: docker push ${{ env.TAG }}
+        if: github.ref == 'refs/heads/master'  
+        run: docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
+        
+      - name: Deploy
+        if: github.ref == 'refs/heads/master'
+        run: >-
+          gcloud beta run deploy ${{ env.BACKEND }}
+          --quiet
+          --region ${{ env.REGION }}
+          --image="${{ env.REGISTRY }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA"
+          --execution-environment gen2
+          --allow-unauthenticated --port=8080
+          --session-affinity
+          --cpu=1 --memory=1Gi
+          --min-instances=0 --max-instances=1
+          --concurrency=200 --timeout=600
+          --service-account livrovivo-storage-manager
+          --update-env-vars BUCKET=${{ env.BUCKET }}
+          --update-secrets=LIVEBOOK_PASSWORD=login_password:1
