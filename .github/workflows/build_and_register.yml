@@ -23,6 +23,7 @@ jobs:
           
       - uses: 'google-github-actions/auth@v2'
         with:
+          create_credentials_file: 'true'
           service_account: 'gh-actions-account@livrovivo.iam.gserviceaccount.com' 
           workload_identity_provider: 'projects/901339380733/locations/global/workloadIdentityPools/github/providers/my-repo'
           
@@ -30,7 +31,9 @@ jobs:
         uses: "google-github-actions/setup-gcloud@v1"
 
       - name: "Use gcloud CLI"
-        run: "gcloud info"
+        run: |-
+          gcloud config set project ${{ env.PROJECT_ID }} 
+          gcloud info
 
       - name: "Docker auth"
         run: |-
