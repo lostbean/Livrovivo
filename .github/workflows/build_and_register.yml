@@ -52,6 +52,7 @@ jobs:
       - name: Deploy
         run: >-
           gcloud beta run deploy ${{ env.BACKEND }}
+          --quiet
           --image="${{ env.REGION }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA"
           --execution-environment gen2
           --allow-unauthenticated --port=8080
@@ -62,4 +63,3 @@ jobs:
           --service-account livrovivo-storage-manager
           --update-env-vars BUCKET=${{ env.BUCKET }}
           --update-secrets=LIVEBOOK_PASSWORD=login_password:1
-          --quiet
