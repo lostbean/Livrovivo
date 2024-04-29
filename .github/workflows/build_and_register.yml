@@ -62,3 +62,4 @@ jobs:
           --service-account livrovivo-storage-manager
           --update-env-vars BUCKET=${{ env.BUCKET }}
           --update-secrets=LIVEBOOK_PASSWORD=login_password:1
+          --quiet
