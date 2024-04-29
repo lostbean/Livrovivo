@@ -49,10 +49,11 @@ jobs:
         working-directory: src
 
       - name: Push image
-        # if: github.ref == 'refs/heads/master'  
+        if: github.ref == 'refs/heads/master'  
         run: docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
         
       - name: Deploy
+        if: github.ref == 'refs/heads/master'
         run: >-
           gcloud beta run deploy ${{ env.BACKEND }}
           --quiet
