@@ -10,7 +10,8 @@ env:
   PROJECT_ID: livrovivo
   BACKEND: livrovivo
   BUCKET: livrovivo
-  REGION: us-central1-docker.pkg.dev
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev
   REPOSITORY_PATH: livrovivo/container-images
   IMAGE_NAME: livebook-with-storage
 
@@ -41,21 +42,22 @@ jobs:
 
       - name: "Docker auth"
         run: |-
-          gcloud auth configure-docker ${{ env.REGION }} --quiet
+          gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
 
       - name: Build image
-        run: docker build . --file Dockerfile --tag ${{ env.REGION }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
+        run: docker build . --file Dockerfile --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
         working-directory: src
 
       - name: Push image
         # if: github.ref == 'refs/heads/master'  
-        run: docker push ${{ env.REGION }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
+        run: docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
         
       - name: Deploy
         run: >-
           gcloud beta run deploy ${{ env.BACKEND }}
           --quiet
-          --image="${{ env.REGION }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA"
+          --region ${{ env.REGION }}
+          --image="${{ env.REGISTRY }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA"
           --execution-environment gen2
           --allow-unauthenticated --port=8080
           --session-affinity
