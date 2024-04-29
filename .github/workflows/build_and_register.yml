@@ -15,7 +15,7 @@ env:
   IMAGE_NAME: livebook-with-storage
 
 jobs:
-  build-artifact:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # This is required for requesting the JWT
@@ -44,15 +44,9 @@ jobs:
       - name: Build image
         run: docker build . --file Dockerfile --tag ${{ env.REGION }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
         working-directory: src
-  
-  push-artifact:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write # This is required for requesting the JWT
-    needs: build-artifact
-    # if: github.ref == 'refs/heads/master'
-    steps:
+
       - name: Push image
+        # if: github.ref == 'refs/heads/master'  
         run: docker push ${{ env.REGION }}/${{ env.REPOSITORY_PATH }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
         
       - name: Deploy
